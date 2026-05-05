@@ -1,0 +1,38 @@
+@import './variables.scss';
+
+@mixin health-pulse($color) {
+  animation: pulse-animation 2s infinite;
+  border-color: $color;
+
+  @keyframes pulse-animation {
+    0% {
+      box-shadow: 0 0 0 0 rgba($color, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba($color, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba($color, 0);
+    }
+  }
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin dashboard-card {
+  background-color: $bg-card;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  padding: 1.5rem;
+  color: $text-main;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    background-color: $bg-card-hover;
+  }
+}

@@ -1,0 +1,83 @@
+<div class="dashboard-container">
+  <div class="header">
+    <h1>OCR Mission Control</h1>
+  </div>
+
+  <div class="controls">
+    <label>
+      <input type="checkbox" [ngModel]="simulateError()" (ngModelChange)="simulateError.set($event)" />
+      Simulate Google Vision 500 Error (Trigger Failover)
+    </label>
+  </div>
+
+  <!-- Provider Health Monitor -->
+  <div class="provider-grid">
+    <div class="provider-card" *ngFor="let provider of providers()" [ngClass]="provider.colorClass" [class.inactive]="!provider.isActive">
+      <h3>{{ provider.name }}</h3>
+      <p>State: {{ provider.colorClass === 'idle' ? 'Ready' : 'Processing' }}</p>
+      
+      <div class="toggle-switch">
+        <label>
+          <input type="checkbox" [checked]="provider.isActive" (change)="toggleProvider(provider.name, provider.isActive)">
+          {{ provider.isActive ? 'Active' : 'Inactive' }}
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Section -->
+  <div class="analytics-section">
+    <div class="chart-container">
+      <h3>Provider Traffic</h3>
+      <ngx-charts-bar-vertical
+        [view]="[400, 250]"
+        [results]="chartData()"
+        [scheme]="colorScheme"
+        [xAxis]="true"
+        [yAxis]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Provider"
+        yAxisLabel="Requests">
+      </ngx-charts-bar-vertical>
+    </div>
+
+    <div class="audit-table-container">
+      <h3>Recent Audit Logs</h3>
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Provider</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let req of requests()" [class.failover]="req.status === 'FAILOVER'">
+            <td>{{ req.time }}</td>
+            <td>{{ req.provider }}</td>
+            <td>{{ req.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- OCR Tester -->
+  <div class="ocr-tester">
+    <h3>OCR Document Tester</h3>
+    <ngx-dropzone (change)="onSelect($event)">
+      <ngx-dropzone-label>Drag and drop a PDF/Image here...</ngx-dropzone-label>
+      <ngx-dropzone-preview *ngFor="let f of files" [removable]="true" (removed)="onRemove(f)">
+        <ngx-dropzone-label>{{ f.name }}</ngx-dropzone-label>
+      </ngx-dropzone-preview>
+    </ngx-dropzone>
+
+    <button (click)="uploadFiles()">Process Document</button>
+
+    <div *ngIf="ocrResult()">
+      <h4>Results:</h4>
+      <pre><code>{{ ocrResult() }}</code></pre>
+    </div>
+  </div>
+</div>
