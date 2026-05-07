@@ -19,7 +19,6 @@ export class DashboardComponent implements OnInit {
   simulateError = signal<boolean>(false);
   ocrResult = signal<string>('');
   creditsRemaining = signal<number>(0);
-  documentMode = signal<string>('general');
   parsedResult = signal<any>(null);
   
   // Providers State
@@ -122,9 +121,8 @@ export class DashboardComponent implements OnInit {
       }, 500);
     }
 
-    const mode = this.documentMode();
     this.http.post<any>('http://localhost:3000/ocr/process', 
-      { documentBase64: payload, mode: mode !== 'general' ? mode : undefined },
+      { documentBase64: payload },
       { headers: { 'x-api-key': 'test_api_key_123' } }
     )
       .subscribe({
