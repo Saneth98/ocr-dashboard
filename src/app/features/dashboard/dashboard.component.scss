@@ -100,6 +100,35 @@ header {
   background-color: $bg-card;
   border-radius: 8px;
   border: 1px solid $border-color;
+
+  .controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .mode-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    select {
+      background-color: $bg-dark-slate;
+      color: $text-main;
+      border: 1px solid $border-color;
+      border-radius: 4px;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-gold;
+      }
+    }
+  }
 }
 
 .analytics-section {
@@ -170,5 +199,160 @@ header {
     &:hover {
       opacity: 0.9;
     }
+  }
+}
+
+// Structured Results Panel
+.results-panel {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid $border-color;
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    h4 {
+      margin: 0;
+      color: $primary-gold;
+    }
+  }
+
+  .doc-type-badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    background-color: rgba($text-muted, 0.2);
+    color: $text-muted;
+
+    &.invoice {
+      background-color: rgba($primary-gold, 0.2);
+      color: $primary-gold;
+      border: 1px solid rgba($primary-gold, 0.4);
+    }
+  }
+
+  .results-meta {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .meta-label {
+      font-size: 0.75rem;
+      color: $text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .meta-value {
+      font-size: 0.95rem;
+      color: $text-main;
+      font-weight: 500;
+    }
+  }
+
+  .results-text {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+
+    h5 {
+      margin: 0 0 0.5rem;
+      color: $text-muted;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    p {
+      margin: 0;
+      color: $text-main;
+      line-height: 1.5;
+    }
+  }
+}
+
+// Invoice Field Cards
+.invoice-fields {
+  margin-bottom: 1rem;
+
+  h5 {
+    margin: 0 0 0.75rem;
+    color: $primary-gold;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .fields-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .field-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem;
+    background-color: rgba($primary-gold, 0.05);
+    border: 1px solid rgba($primary-gold, 0.2);
+    border-radius: 6px;
+    transition: border-color 0.2s;
+
+    &:hover {
+      border-color: rgba($primary-gold, 0.5);
+    }
+
+    .field-label {
+      font-size: 0.7rem;
+      color: $text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $text-main;
+    }
+  }
+}
+
+// Raw JSON collapsible
+.raw-json {
+  summary {
+    cursor: pointer;
+    color: $text-muted;
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
+
+    &:hover {
+      color: $text-main;
+    }
+  }
+
+  pre {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    color: $text-muted;
   }
 }

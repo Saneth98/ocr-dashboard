@@ -19,6 +19,8 @@ export class DashboardComponent implements OnInit {
   simulateError = signal<boolean>(false);
   ocrResult = signal<string>('');
   creditsRemaining = signal<number>(0);
+  documentMode = signal<string>('general');
+  parsedResult = signal<any>(null);
   
   // Providers State
   providers = signal([
@@ -120,14 +122,16 @@ export class DashboardComponent implements OnInit {
       }, 500);
     }
 
+    const mode = this.documentMode();
     this.http.post<any>('http://localhost:3000/ocr/process', 
-      { documentBase64: payload },
+      { documentBase64: payload, mode: mode !== 'general' ? mode : undefined },
       { headers: { 'x-api-key': 'test_api_key_123' } }
     )
       .subscribe({
         next: (res) => {
           this.ocrResult.set(JSON.stringify(res, null, 2));
-          this.recordAnalytics(res.provider, payload === 'trigger_500_error');
+          this.parsedResult.set(res);
+          this.recordAnalytics(res.providerUsed, payload === 'trigger_500_error');
           if (res.creditsRemaining !== undefined) {
             this.creditsRemaining.set(res.creditsRemaining);
           }
@@ -135,6 +139,7 @@ export class DashboardComponent implements OnInit {
         },
         error: (err) => {
           this.ocrResult.set(JSON.stringify(err.error || err, null, 2));
+          this.parsedResult.set(null);
           this.resetProviders();
         }
       });

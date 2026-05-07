@@ -9,10 +9,20 @@
   </header>
 
   <div class="controls">
-    <label>
-      <input type="checkbox" [ngModel]="simulateError()" (ngModelChange)="simulateError.set($event)" />
-      Simulate Google Vision 500 Error (Trigger Failover)
-    </label>
+    <div class="controls-row">
+      <label>
+        <input type="checkbox" [ngModel]="simulateError()" (ngModelChange)="simulateError.set($event)" />
+        Simulate Google Vision 500 Error (Trigger Failover)
+      </label>
+
+      <div class="mode-selector">
+        <label>Document Mode:</label>
+        <select [ngModel]="documentMode()" (ngModelChange)="documentMode.set($event)">
+          <option value="general">General</option>
+          <option value="invoice">Invoice</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   <!-- Provider Health Monitor -->
@@ -80,9 +90,59 @@
 
     <button (click)="uploadFiles()">Process Document</button>
 
-    <div *ngIf="ocrResult()">
-      <h4>Results:</h4>
-      <pre><code>{{ ocrResult() }}</code></pre>
+    <!-- Structured Results Panel -->
+    <div *ngIf="parsedResult()" class="results-panel">
+      <div class="results-header">
+        <h4>Results</h4>
+        <span class="doc-type-badge" [class.invoice]="parsedResult().documentType === 'invoice'">
+          {{ parsedResult().documentType | uppercase }}
+        </span>
+      </div>
+
+      <div class="results-meta">
+        <div class="meta-item">
+          <span class="meta-label">Provider</span>
+          <span class="meta-value">{{ parsedResult().providerUsed }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Confidence</span>
+          <span class="meta-value">{{ parsedResult().confidenceScore }}%</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Processed At</span>
+          <span class="meta-value">{{ parsedResult().processedAt | date:'medium' }}</span>
+        </div>
+      </div>
+
+      <div class="results-text">
+        <h5>Extracted Text</h5>
+        <p>{{ parsedResult().text }}</p>
+      </div>
+
+      <!-- Invoice Fields -->
+      <div *ngIf="parsedResult().fields" class="invoice-fields">
+        <h5>Extracted Invoice Fields</h5>
+        <div class="fields-grid">
+          <div class="field-card">
+            <span class="field-label">Bill Number</span>
+            <span class="field-value">{{ parsedResult().fields.billNumber }}</span>
+          </div>
+          <div class="field-card">
+            <span class="field-label">Amount</span>
+            <span class="field-value">${{ parsedResult().fields.amount }}</span>
+          </div>
+          <div class="field-card">
+            <span class="field-label">Date</span>
+            <span class="field-value">{{ parsedResult().fields.date }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Raw JSON -->
+      <details class="raw-json">
+        <summary>Raw JSON Response</summary>
+        <pre><code>{{ ocrResult() }}</code></pre>
+      </details>
     </div>
   </div>
 </div>
