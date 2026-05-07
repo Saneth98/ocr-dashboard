@@ -20,6 +20,11 @@ export class DashboardComponent implements OnInit {
   ocrResult = signal<string>('');
   creditsRemaining = signal<number>(0);
   parsedResult = signal<any>(null);
+
+  // Custom Schema State
+  isCustomSchemaMode = signal<boolean>(false);
+  customSchemaStr = signal<string>('{\n  "mileage": "",\n  "lastOilChange": "",\n  "vehicleModel": "",\n  "cost": "",\n  "vin": ""\n}');
+
   
   // Providers State
   providers = signal([
@@ -111,7 +116,7 @@ export class DashboardComponent implements OnInit {
     this.updateProviderStatus('Google Vision API', 'active-google');
     
     // Simulate reading file as base64
-    let payload = 'normal_document';
+    let payload = this.isCustomSchemaMode() ? 'vehicle_service' : 'normal_document';
     if (this.simulateError()) {
       payload = 'trigger_500_error';
       this.updateProviderStatus('Google Vision API', 'error-state');
@@ -121,8 +126,22 @@ export class DashboardComponent implements OnInit {
       }, 500);
     }
 
-    this.http.post<any>('http://localhost:3000/ocr/process', 
-      { documentBase64: payload },
+    let url = 'http://localhost:3000/ocr/process';
+    let body: any = { documentBase64: payload };
+
+    if (this.isCustomSchemaMode()) {
+      url = 'http://localhost:3000/ocr/custom-schema';
+      try {
+        body.targetSchema = JSON.parse(this.customSchemaStr());
+      } catch (e) {
+        alert('Invalid JSON in custom schema');
+        this.resetProviders();
+        return;
+      }
+    }
+
+    this.http.post<any>(url, 
+      body,
       { headers: { 'x-api-key': 'test_api_key_123' } }
     )
       .subscribe({
