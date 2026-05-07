@@ -18,6 +18,7 @@ export class DashboardComponent implements OnInit {
   // States
   simulateError = signal<boolean>(false);
   ocrResult = signal<string>('');
+  creditsRemaining = signal<number>(0);
   
   // Providers State
   providers = signal([
@@ -53,6 +54,25 @@ export class DashboardComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load initial statuses', err)
     });
+
+    this.http.get<any>('http://localhost:3000/auth/me').subscribe({
+      next: (user) => {
+        if (user && user.creditsRemaining !== undefined) {
+          this.creditsRemaining.set(user.creditsRemaining);
+        }
+      },
+      error: (err) => console.error('Failed to load user', err)
+    });
+  }
+
+  buyCredits() {
+    this.http.post<any>('http://localhost:3000/stripe/create-checkout-session', { email: 'test@example.com' })
+      .subscribe({
+        next: (res) => {
+          window.location.href = res.url;
+        },
+        error: (err) => console.error('Failed to buy credits', err)
+      });
   }
 
   toggleProvider(name: string, currentStatus: boolean) {
@@ -100,15 +120,21 @@ export class DashboardComponent implements OnInit {
       }, 500);
     }
 
-    this.http.post<any>('http://localhost:3000/ocr/process', { documentBase64: payload })
+    this.http.post<any>('http://localhost:3000/ocr/process', 
+      { documentBase64: payload },
+      { headers: { 'x-api-key': 'test_api_key_123' } }
+    )
       .subscribe({
         next: (res) => {
           this.ocrResult.set(JSON.stringify(res, null, 2));
           this.recordAnalytics(res.provider, payload === 'trigger_500_error');
+          if (res.creditsRemaining !== undefined) {
+            this.creditsRemaining.set(res.creditsRemaining);
+          }
           this.resetProviders();
         },
         error: (err) => {
-          this.ocrResult.set(JSON.stringify(err, null, 2));
+          this.ocrResult.set(JSON.stringify(err.error || err, null, 2));
           this.resetProviders();
         }
       });

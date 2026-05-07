@@ -1,7 +1,12 @@
 <div class="dashboard-container">
-  <div class="header">
-    <h1>OCR Mission Control</h1>
-  </div>
+  <header>
+    <h1>Mission Control</h1>
+    <div class="header-right">
+      <span class="credits-badge" [class.low-credits]="creditsRemaining() <= 1">Credits: {{ creditsRemaining() }}</span>
+      <button class="buy-credits-btn" (click)="buyCredits()">Buy Credits</button>
+      <div class="user-profile">Admin</div>
+    </div>
+  </header>
 
   <div class="controls">
     <label>
