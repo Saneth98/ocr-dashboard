@@ -1,9 +1,10 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
-import { HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
-import { NgxDropzoneModule } from 'ngx-dropzone';
+import {Component, inject, signal, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {NgxChartsModule, Color, ScaleType} from '@swimlane/ngx-charts';
+import {HttpClient} from '@angular/common/http';
+import {FormsModule} from '@angular/forms';
+import {NgxDropzoneModule} from 'ngx-dropzone';
+import {AuthService} from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,31 +15,23 @@ import { NgxDropzoneModule } from 'ngx-dropzone';
 })
 export class DashboardComponent implements OnInit {
   private http = inject(HttpClient);
+  public authService = inject(AuthService);
 
   // States
   simulateError = signal<boolean>(false);
   ocrResult = signal<string>('');
-  creditsRemaining = signal<number>(0);
   parsedResult = signal<any>(null);
 
   // Custom Schema State
   isCustomSchemaMode = signal<boolean>(false);
   customSchemaStr = signal<string>('{\n  "mileage": "",\n  "lastOilChange": "",\n  "vehicleModel": "",\n  "cost": "",\n  "vin": ""\n}');
 
-  
-  // Providers State
-  providers = signal([
-    { name: 'Google Vision API', status: 'idle', colorClass: 'idle', isActive: true },
-    { name: 'AWS Textract', status: 'idle', colorClass: 'idle', isActive: true },
-    { name: 'LlamaParse', status: 'idle', colorClass: 'idle', isActive: true },
-  ]);
-
   // Analytics
   requests = signal<any[]>([]);
   chartData = signal<any[]>([
-    { name: 'Google Vision API', value: 0 },
-    { name: 'AWS Textract', value: 0 },
-    { name: 'LlamaParse', value: 0 },
+    {name: 'Google Vision API', value: 0},
+    {name: 'AWS Textract', value: 0},
+    {name: 'LlamaParse', value: 0},
   ]);
 
   colorScheme: Color = {
@@ -48,57 +41,32 @@ export class DashboardComponent implements OnInit {
     domain: ['#10b981', '#f59e0b', '#ef4444']
   };
 
-  files: File[] = [];
-
   ngOnInit() {
-    this.http.get<any[]>('http://localhost:3000/ocr/providers/status').subscribe({
-      next: (statuses) => {
-        this.providers.update(p => p.map(prov => {
-          const matched = statuses.find(s => s.name === prov.name);
-          return matched ? { ...prov, isActive: matched.isActive } : prov;
-        }));
-      },
-      error: (err) => console.error('Failed to load initial statuses', err)
-    });
+    this.authService.loadUserProfile();
+    this.loadAnalytics();
+  }
 
-    this.http.get<any>('http://localhost:3000/auth/me').subscribe({
-      next: (user) => {
-        if (user && user.creditsRemaining !== undefined) {
-          this.creditsRemaining.set(user.creditsRemaining);
-        }
-      },
-      error: (err) => console.error('Failed to load user', err)
+  loadAnalytics() {
+    this.http.get<any[]>('http://localhost:3000/auth/usage').subscribe({
+      next: (data) => {
+        this.requests.set(data);
+        this.updateChartData(data);
+      }
     });
   }
 
-  buyCredits() {
-    this.http.post<any>('http://localhost:3000/stripe/create-checkout-session', { email: 'test@example.com' })
-      .subscribe({
-        next: (res) => {
-          window.location.href = res.url;
-        },
-        error: (err) => console.error('Failed to buy credits', err)
-      });
-  }
-
-  toggleProvider(name: string, currentStatus: boolean) {
-    const newStatus = !currentStatus;
-    // Optimistic UI Update
-    this.providers.update(p => p.map(prov => 
-      prov.name === name ? { ...prov, isActive: newStatus } : prov
-    ));
-
-    this.http.patch(`http://localhost:3000/ocr/providers/${encodeURIComponent(name)}/toggle`, { isActive: newStatus })
-      .subscribe({
-        next: () => console.log(`Successfully toggled ${name} to ${newStatus}`),
-        error: (err) => {
-          console.error(`Failed to toggle ${name}`, err);
-          // Revert optimistic update
-          this.providers.update(p => p.map(prov => 
-            prov.name === name ? { ...prov, isActive: currentStatus } : prov
-          ));
-        }
-      });
+  private updateChartData(data: any[]) {
+    const counts = {'Google Vision API': 0, 'AWS Textract': 0, 'LlamaParse': 0};
+    data.forEach(log => {
+      if (counts[log.providerUsed as keyof typeof counts] !== undefined) {
+        counts[log.providerUsed as keyof typeof counts]++;
+      }
+    });
+    this.chartData.set([
+      {name: 'Google Vision API', value: counts['Google Vision API']},
+      {name: 'AWS Textract', value: counts['AWS Textract']},
+      {name: 'LlamaParse', value: counts['LlamaParse']},
+    ]);
   }
 
   onSelect(event: any) {
@@ -109,86 +77,83 @@ export class DashboardComponent implements OnInit {
     this.files.splice(this.files.indexOf(event), 1);
   }
 
+  files: File[] = [];
+
   async uploadFiles() {
     if (this.files.length === 0) return;
-    
-    // Set Google to active initially
-    this.updateProviderStatus('Google Vision API', 'active-google');
-    
-    // Simulate reading file as base64
-    let payload = this.isCustomSchemaMode() ? 'vehicle_service' : 'normal_document';
-    if (this.simulateError()) {
-      payload = 'trigger_500_error';
-      this.updateProviderStatus('Google Vision API', 'error-state');
-      // Briefly show AWS taking over
-      setTimeout(() => {
-         this.updateProviderStatus('AWS Textract', 'active-failover');
-      }, 500);
+
+    const file = this.files[0];
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const base64 = e.target.result;
+      this.startUploadFlow(base64);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  private startUploadFlow(base64: string) {
+    let currentKey = localStorage.getItem('dashboard_play_key');
+
+    if (!currentKey) {
+      this.http.post<any>('http://localhost:3000/auth/tokens', {name: 'Dashboard Playground'}).subscribe({
+        next: (res) => {
+          localStorage.setItem('dashboard_play_key', res.plainTextKey);
+          this.performUpload(res.plainTextKey, base64);
+        },
+        error: (err) => alert('Please generate an API key in the API Keys tab first!')
+      });
+    } else {
+      this.performUpload(currentKey, base64);
+    }
+  }
+
+  private performUpload(apiKey: string, base64: string) {
+    const formData = new FormData();
+    // Send the actual file object if available, otherwise fallback to base64
+    const file = this.files[0];
+    if (file) {
+      formData.append('file', file);
+    } else {
+      formData.append('documentBase64', base64);
     }
 
     let url = 'http://localhost:3000/ocr/process';
-    let body: any = { documentBase64: payload };
-
     if (this.isCustomSchemaMode()) {
       url = 'http://localhost:3000/ocr/custom-schema';
-      try {
-        body.targetSchema = JSON.parse(this.customSchemaStr());
-      } catch (e) {
-        alert('Invalid JSON in custom schema');
-        this.resetProviders();
-        return;
-      }
+      formData.append('targetSchema', this.customSchemaStr());
     }
 
-    this.http.post<any>(url, 
-      body,
-      { headers: { 'x-api-key': 'test_api_key_123' } }
-    )
-      .subscribe({
-        next: (res) => {
-          this.ocrResult.set(JSON.stringify(res, null, 2));
-          this.parsedResult.set(res);
-          this.recordAnalytics(res.providerUsed, payload === 'trigger_500_error');
-          if (res.creditsRemaining !== undefined) {
-            this.creditsRemaining.set(res.creditsRemaining);
-          }
-          this.resetProviders();
-        },
-        error: (err) => {
+    this.http.post<any>(url, formData, {
+      headers: {'x-api-key': apiKey}
+    }).subscribe({
+      next: (res) => {
+
+        this.ocrResult.set(JSON.stringify(res, null, 2));
+        this.parsedResult.set(res);
+        this.recordAnalytics(res.providerUsed, this.simulateError());
+        if (res.creditsRemaining !== undefined) {
+          this.authService.updateCredits(res.creditsRemaining);
+        }
+      },
+      error: (err) => {
+        if (err.status === 401 || err.status === 403) {
+          console.warn('API Key invalid. Clearing and retrying...');
+          localStorage.removeItem('dashboard_play_key');
+          this.uploadFiles();
+        } else {
           this.ocrResult.set(JSON.stringify(err.error || err, null, 2));
           this.parsedResult.set(null);
-          this.resetProviders();
         }
-      });
-  }
-
-  updateProviderStatus(name: string, cssClass: string) {
-    this.providers.update(p => p.map(prov => 
-      prov.name === name ? { ...prov, colorClass: cssClass } : prov
-    ));
-  }
-
-  resetProviders() {
-    setTimeout(() => {
-      this.providers.update(p => p.map(prov => ({ ...prov, colorClass: 'idle' })));
-    }, 2000);
-  }
-
-  recordAnalytics(provider: string, isFailover: boolean) {
-    const newReq = { 
-      time: new Date().toLocaleTimeString(), 
-      provider, 
-      status: isFailover ? 'FAILOVER' : 'SUCCESS' 
-    };
-    this.requests.update(r => [newReq, ...r].slice(0, 10));
-
-    this.chartData.update(data => {
-      return data.map(d => {
-        if (d.name === provider) {
-          return { ...d, value: d.value + 1 };
-        }
-        return d;
-      });
+      }
     });
   }
+
+  private recordAnalytics(provider: string, isFailover: boolean) {
+    this.loadAnalytics(); // Refresh
+  }
+
+  buyCredits() {
+    alert('Redirecting to Stripe checkout...');
+  }
 }
+

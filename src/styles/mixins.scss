@@ -1,4 +1,4 @@
-@import './variables.scss';
+@use './variables.scss' as *;
 
 @mixin health-pulse($color) {
   animation: pulse-animation 2s infinite;

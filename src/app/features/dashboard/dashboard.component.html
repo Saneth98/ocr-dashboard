@@ -2,9 +2,15 @@
   <header>
     <h1>Mission Control</h1>
     <div class="header-right">
-      <span class="credits-badge" [class.low-credits]="creditsRemaining() <= 1">Credits: {{ creditsRemaining() }}</span>
+      <div class="credits-wrapper" style="display: flex; align-items: center; background: rgba(212, 175, 55, 0.1); padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">
+        <span style="color: #d4af37; font-weight: bold; margin-right: 0.5rem;">Available Credits:</span>
+        <span style="color: white; font-size: 1.1rem; font-weight: 800;">{{ authService.creditsRemaining() }}</span>
+      </div>
       <button class="buy-credits-btn" (click)="buyCredits()">Buy Credits</button>
-      <div class="user-profile">Admin</div>
+
+      <div class="user-profile">{{ authService.currentUser()?.email || 'Guest' }}</div>
+
+
     </div>
   </header>
 
@@ -21,27 +27,12 @@
       </label>
       <div *ngIf="isCustomSchemaMode()" style="margin-top: 0.5rem;">
         <p style="margin-bottom: 0.5rem; font-size: 0.85rem; color: #94a3b8;">Define JSON schema to extract specific fields (try with 'vehicle_service' document payload simulation later):</p>
-        <textarea 
-          [ngModel]="customSchemaStr()" 
+        <textarea
+          [ngModel]="customSchemaStr()"
           (ngModelChange)="customSchemaStr.set($event)"
-          rows="6" 
+          rows="6"
           style="width: 100%; font-family: monospace; padding: 0.75rem; background: #0b1120; color: #f8fafc; border: 1px solid #334155; border-radius: 4px;">
         </textarea>
-      </div>
-    </div>
-  </div>
-
-  <!-- Provider Health Monitor -->
-  <div class="provider-grid">
-    <div class="provider-card" *ngFor="let provider of providers()" [ngClass]="provider.colorClass" [class.inactive]="!provider.isActive">
-      <h3>{{ provider.name }}</h3>
-      <p>State: {{ provider.colorClass === 'idle' ? 'Ready' : 'Processing' }}</p>
-      
-      <div class="toggle-switch">
-        <label>
-          <input type="checkbox" [checked]="provider.isActive" (change)="toggleProvider(provider.name, provider.isActive)">
-          {{ provider.isActive ? 'Active' : 'Inactive' }}
-        </label>
       </div>
     </div>
   </div>
@@ -75,10 +66,11 @@
         </thead>
         <tbody>
           <tr *ngFor="let req of requests()" [class.failover]="req.status === 'FAILOVER'">
-            <td>{{ req.time }}</td>
-            <td>{{ req.provider }}</td>
+            <td>{{ req.createdAt | date:'short' }}</td>
+            <td>{{ req.providerUsed }}</td>
             <td>{{ req.status }}</td>
           </tr>
+
         </tbody>
       </table>
     </div>

@@ -1,0 +1,76 @@
+@use 'sass:color';
+@use '../../../styles/variables.scss' as *;
+@use '../../../styles/mixins.scss' as *;
+
+.settings-container {
+  padding: 2rem;
+}
+
+
+header {
+  margin-bottom: 2rem;
+  h1 { color: $primary-gold; margin: 0; }
+  .subtitle { color: $text-muted; margin: 0.5rem 0 0; }
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.settings-card {
+  @include dashboard-card;
+  h3 { margin-top: 0; color: $text-main; font-size: 1.1rem; margin-bottom: 1.5rem; }
+}
+
+.settings-card.highlight {
+  border-color: $primary-gold;
+  background: linear-gradient(145deg, $bg-card 0%, color.adjust($bg-card, $lightness: -5%) 100%);
+}
+
+.info-group {
+  margin-bottom: 1.25rem;
+  label { display: block; font-size: 0.75rem; color: $text-muted; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+  .value { color: $text-main; font-size: 1rem; }
+}
+
+.credits-display {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  .count { display: block; font-size: 3rem; font-weight: bold; color: $primary-gold; }
+  .label { color: $text-muted; font-size: 0.9rem; }
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: $primary-gold;
+  color: $bg-dark-slate;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  &:hover { opacity: 0.9; }
+}
+
+.btn-outline {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: transparent;
+  color: $text-main;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  cursor: pointer;
+  &:hover { border-color: $text-muted; }
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  &.success { background-color: rgba($success-green, 0.2); color: $success-green; }
+}
