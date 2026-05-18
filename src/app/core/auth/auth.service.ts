@@ -13,6 +13,7 @@ export class AuthService {
   creditsRemaining = signal<number>(0);
   token = signal<string | null>(localStorage.getItem('token'));
   authStatus = computed(() => !!this.token());
+  isAdmin = computed(() => !!this.currentUser()?.isAdmin);
 
   loadUserProfile() {
     this.http.get<any>(`${this.apiUrl}/me`).subscribe({
@@ -33,11 +34,14 @@ export class AuthService {
         if (res.access_token) {
           localStorage.setItem('token', res.access_token);
           this.token.set(res.access_token);
+          if (res.user) {
+            this.currentUser.set(res.user);
+            this.creditsRemaining.set(res.user.creditsRemaining ?? 0);
+          }
           this.loadUserProfile();
         }
       })
     );
-
   }
 
   register(email: string, pass: string) {

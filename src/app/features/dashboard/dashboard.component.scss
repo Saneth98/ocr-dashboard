@@ -350,3 +350,19 @@ header {
     color: $text-muted;
   }
 }
+
+.status-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.key-hint {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}

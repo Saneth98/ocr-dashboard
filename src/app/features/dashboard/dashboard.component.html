@@ -55,22 +55,36 @@
     </div>
 
     <div class="audit-table-container">
-      <h3>Recent Audit Logs</h3>
+      <h3>Recent Usage History</h3>
       <table class="audit-table">
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Provider</th>
+            <th>Request ID</th>
+            <th>Date / Time</th>
             <th>Status</th>
+            <th>Pages</th>
+            <th>Latency</th>
+            <th>API Key Used</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let req of requests()" [class.failover]="req.status === 'FAILOVER'">
-            <td>{{ req.createdAt | date:'short' }}</td>
-            <td>{{ req.providerUsed }}</td>
-            <td>{{ req.status }}</td>
+          <tr *ngFor="let req of requests()">
+            <td class="key-hint" [title]="req.requestId">{{ req.requestId | slice:0:8 }}…</td>
+            <td>{{ req.createdAt | date:'medium' }}</td>
+            <td>
+              <span class="status-badge"
+                [style.background]="req.status === 'SUCCESS' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'"
+                [style.color]="req.status === 'SUCCESS' ? '#10b981' : '#ef4444'"
+                [style.border]="req.status === 'SUCCESS' ? '1px solid rgba(16,185,129,0.4)' : '1px solid rgba(239,68,68,0.4)'">
+                {{ req.status }}
+              </span>
+            </td>
+            <td>{{ req.pageCount ?? '—' }}</td>
+            <td>{{ req.latencyMs }}ms</td>
+            <td class="key-hint">
+              {{ req.apiKeyHint ? ('ocr-tok_....' + req.apiKeyHint) : '—' }}
+            </td>
           </tr>
-
         </tbody>
       </table>
     </div>
@@ -116,6 +130,10 @@
         <div class="meta-item">
           <span class="meta-label">Processed At</span>
           <span class="meta-value">{{ parsedResult().processedAt | date:'medium' }}</span>
+        </div>
+        <div class="meta-item" *ngIf="parsedResult()._meta?.llmUsage">
+          <span class="meta-label">LLM Tokens</span>
+          <span class="meta-value">{{ parsedResult()._meta.llmUsage.totalTokens }} ({{ parsedResult()._meta.llmUsage.promptTokens }}P / {{ parsedResult()._meta.llmUsage.completionTokens }}C)</span>
         </div>
       </div>
 

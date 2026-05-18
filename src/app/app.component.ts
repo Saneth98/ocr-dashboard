@@ -34,6 +34,12 @@ import { CommonModule } from '@angular/common';
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-4.01 4.01"/></svg>
             <span>API Keys</span>
           </a>
+          @if (authService.isAdmin()) {
+            <a routerLink="/admin" routerLinkActive="active" class="nav-item" style="margin-top: 0.5rem; border-top: 1px solid #1e293b; padding-top: 1rem; color: #ef4444;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Admin Panel</span>
+            </a>
+          }
         </nav>
 
 

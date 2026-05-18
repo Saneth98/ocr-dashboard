@@ -57,16 +57,39 @@ import { KeyManagementService } from './key-management.service';
           <h3>Usage History (Recent 50 Requests)</h3>
           <div class="usage-list">
             <div *ngIf="usage().length === 0" class="empty-state">No usage recorded yet.</div>
-            <div class="usage-item" *ngFor="let log of usage()">
-              <div class="log-info">
-                <span class="log-provider">{{ log.providerUsed }}</span>
-                <span class="log-date">{{ log.createdAt | date:'short' }}</span>
-              </div>
-              <div class="log-meta">
-                <span class="log-latency">{{ log.latencyMs }}ms</span>
-                <span class="log-status" [class.success]="log.status === 'SUCCESS'">{{ log.status }}</span>
-              </div>
-            </div>
+            <table *ngIf="usage().length > 0" style="width:100%; border-collapse:collapse; font-size:0.83rem;">
+              <thead>
+                <tr style="color:#64748b; text-align:left; border-bottom:1px solid #1e293b;">
+                  <th style="padding:0.5rem 0.75rem;">Request ID</th>
+                  <th style="padding:0.5rem 0.75rem;">Date / Time</th>
+                  <th style="padding:0.5rem 0.75rem;">Status</th>
+                  <th style="padding:0.5rem 0.75rem;">Pages</th>
+                  <th style="padding:0.5rem 0.75rem;">Latency</th>
+                  <th style="padding:0.5rem 0.75rem;">API Key Used</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let log of usage()" style="border-bottom:1px solid #0f1929;">
+                  <td style="padding:0.5rem 0.75rem; font-family:monospace; color:#94a3b8; font-size:0.78rem;" [title]="log.requestId">
+                    {{ log.requestId | slice:0:8 }}…
+                  </td>
+                  <td style="padding:0.5rem 0.75rem;">{{ log.createdAt | date:'medium' }}</td>
+                  <td style="padding:0.5rem 0.75rem;">
+                    <span style="display:inline-block; padding:0.15rem 0.6rem; border-radius:999px; font-size:0.72rem; font-weight:700; white-space:nowrap;"
+                      [style.background]="log.status === 'SUCCESS' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'"
+                      [style.color]="log.status === 'SUCCESS' ? '#10b981' : '#ef4444'"
+                      [style.border]="log.status === 'SUCCESS' ? '1px solid rgba(16,185,129,0.4)' : '1px solid rgba(239,68,68,0.4)'">
+                      {{ log.status }}
+                    </span>
+                  </td>
+                  <td style="padding:0.5rem 0.75rem;">{{ log.pageCount ?? '—' }}</td>
+                  <td style="padding:0.5rem 0.75rem;">{{ log.latencyMs }}ms</td>
+                  <td style="padding:0.5rem 0.75rem; font-family:monospace; color:#94a3b8; font-size:0.78rem;">
+                    {{ log.apiKeyHint ? ('ocr-tok_....' + log.apiKeyHint) : '—' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
       </div>
