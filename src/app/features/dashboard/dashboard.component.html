@@ -21,16 +21,19 @@
     </label>
 
     <div class="custom-schema-control" style="border-top: 1px solid #334155; padding-top: 1rem;">
-      <label style="display: block; font-weight: bold; color: #d4af37; margin-bottom: 0.5rem;">
-        <input type="checkbox" [ngModel]="isCustomSchemaMode()" (ngModelChange)="isCustomSchemaMode.set($event)" />
-        Enable Custom Schema Extraction
-      </label>
-      <div *ngIf="isCustomSchemaMode()" style="margin-top: 0.5rem;">
-        <p style="margin-bottom: 0.5rem; font-size: 0.85rem; color: #94a3b8;">Define JSON schema to extract specific fields (try with 'vehicle_service' document payload simulation later):</p>
+      <h4 style="color: #d4af37; margin-bottom: 0.5rem;">Target JSON Schema</h4>
+      <div style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 1rem;">
+        <select (change)="selectTemplate($event)" style="padding: 0.4rem; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 4px;">
+          <option value="" disabled selected>Select a Template...</option>
+          <option *ngFor="let t of templates" [value]="t.name">{{ t.name }}</option>
+        </select>
+        <span style="font-size: 0.85rem; color: #94a3b8;">Define JSON schema to extract specific fields:</span>
+      </div>
+      <div>
         <textarea
           [ngModel]="customSchemaStr()"
           (ngModelChange)="customSchemaStr.set($event)"
-          rows="6"
+          rows="10"
           style="width: 100%; font-family: monospace; padding: 0.75rem; background: #0b1120; color: #f8fafc; border: 1px solid #334155; border-radius: 4px;">
         </textarea>
       </div>
@@ -106,15 +109,8 @@
     <div *ngIf="parsedResult()" class="results-panel">
       <div class="results-header">
         <h4>Results</h4>
-        <span class="classification-badge" *ngIf="!isCustomSchemaMode()"
-          [class.medical]="parsedResult().classification === 'medical_record'"
-          [class.legal]="parsedResult().classification === 'legal_document'"
-          [class.invoice]="parsedResult().classification === 'invoice'"
-          [class.receipt]="parsedResult().classification === 'receipt'">
-          {{ parsedResult().classification | uppercase }}
-        </span>
-        <span class="classification-badge" *ngIf="isCustomSchemaMode()" style="background-color: rgba(16, 185, 129, 0.2); color: #10b981; border-color: rgba(16, 185, 129, 0.4);">
-          CUSTOM SCHEMA
+        <span class="classification-badge" style="background-color: rgba(16, 185, 129, 0.2); color: #10b981; border-color: rgba(16, 185, 129, 0.4);">
+          SCHEMA EXTRACTED
         </span>
       </div>
 
@@ -138,39 +134,9 @@
       </div>
 
       <!-- Universal Schema Fields -->
-      <div class="schema-fields" *ngIf="!isCustomSchemaMode()">
-        <h5>Universal Schema</h5>
-        <div class="fields-grid">
-          <div class="field-card">
-            <span class="field-label">Classification</span>
-            <span class="field-value">{{ parsedResult().classification }}</span>
-          </div>
-          <div class="field-card">
-            <span class="field-label">Primary Entity</span>
-            <span class="field-value">{{ parsedResult().primaryEntity }}</span>
-          </div>
-          <div class="field-card">
-            <span class="field-label">Reference Number</span>
-            <span class="field-value">{{ parsedResult().referenceNumber }}</span>
-          </div>
-          <div class="field-card" *ngIf="parsedResult().metadata?.amount !== null">
-            <span class="field-label">Amount</span>
-            <span class="field-value highlight">${{ parsedResult().metadata.amount }}</span>
-          </div>
-          <div class="field-card" *ngIf="parsedResult().metadata?.date">
-            <span class="field-label">Date</span>
-            <span class="field-value">{{ parsedResult().metadata.date }}</span>
-          </div>
-          <div class="field-card" *ngIf="parsedResult().metadata?.currency">
-            <span class="field-label">Currency</span>
-            <span class="field-value">{{ parsedResult().metadata.currency }}</span>
-          </div>
-        </div>
-      </div>
-
       <!-- Custom Schema Fields -->
-      <div class="schema-fields" *ngIf="isCustomSchemaMode() && parsedResult().extractedData">
-        <h5>Custom Extracted Data</h5>
+      <div class="schema-fields" *ngIf="parsedResult().extractedData">
+        <h5>Extracted Data</h5>
         <div class="fields-grid">
           <div class="field-card" *ngFor="let item of parsedResult().extractedData | keyvalue">
             <span class="field-label">{{ item.key }}</span>
@@ -183,7 +149,7 @@
 
       <div class="results-text">
         <h5>Extracted Text</h5>
-        <p>{{ isCustomSchemaMode() ? parsedResult().rawText : parsedResult().text }}</p>
+        <p>{{ parsedResult().text || parsedResult().rawText }}</p>
       </div>
 
       <!-- Raw JSON -->
