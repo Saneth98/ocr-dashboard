@@ -23,8 +23,31 @@ export class DashboardComponent implements OnInit {
   parsedResult = signal<any>(null);
 
   // Custom Schema State
-  isCustomSchemaMode = signal<boolean>(false);
   customSchemaStr = signal<string>('{\n  "mileage": "",\n  "lastOilChange": "",\n  "vehicleModel": "",\n  "cost": "",\n  "vin": ""\n}');
+
+  // Templates
+  templates = [
+    {
+      name: 'Generic Invoice',
+      schema: '{\n  "invoiceNumber": "",\n  "date": "",\n  "totalAmount": 0,\n  "vendorName": "",\n  "lineItems": [\n    {\n      "description": "",\n      "quantity": 0,\n      "unitPrice": 0,\n      "total": 0\n    }\n  ]\n}'
+    },
+    {
+      name: 'Receipt',
+      schema: '{\n  "merchantName": "",\n  "transactionDate": "",\n  "total": 0,\n  "tax": 0,\n  "paymentMethod": ""\n}'
+    },
+    {
+      name: 'Business Card',
+      schema: '{\n  "fullName": "",\n  "companyName": "",\n  "jobTitle": "",\n  "email": "",\n  "phoneNumber": "",\n  "website": ""\n}'
+    }
+  ];
+
+  selectTemplate(event: any) {
+    const selectedName = event.target.value;
+    const template = this.templates.find(t => t.name === selectedName);
+    if (template) {
+      this.customSchemaStr.set(template.schema);
+    }
+  }
 
   // Analytics
   requests = signal<any[]>([]);
@@ -117,11 +140,8 @@ export class DashboardComponent implements OnInit {
       formData.append('documentBase64', base64);
     }
 
-    let url = 'http://localhost:3000/ocr/process';
-    if (this.isCustomSchemaMode()) {
-      url = 'http://localhost:3000/ocr/custom-schema';
-      formData.append('targetSchema', this.customSchemaStr());
-    }
+    const url = 'http://localhost:3000/ocr/extract';
+    formData.append('targetSchema', this.customSchemaStr());
 
     this.http.post<any>(url, formData, {
       headers: {'x-api-key': apiKey}
