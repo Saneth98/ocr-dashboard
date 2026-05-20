@@ -12,8 +12,8 @@ import { AuthService } from '../../../core/auth/auth.service';
     <div class="auth-container">
       <div class="auth-box">
         <div class="logo">
-          <div class="logo-icon">AG</div>
-          <h2>ANTIGRAVITY</h2>
+          <div class="logo-icon">SO</div>
+          <h2>SMART OCR</h2>
         </div>
         
         <h3>Mission Control Login</h3>
@@ -22,7 +22,7 @@ import { AuthService } from '../../../core/auth/auth.service';
         <form (submit)="onSubmit()" class="auth-form">
           <div class="form-group">
             <label>Email Address</label>
-            <input type="email" [(ngModel)]="email" name="email" placeholder="engineer@antigravity.ai" required>
+            <input type="email" [(ngModel)]="email" name="email" placeholder="user@smartocr.com" required>
           </div>
           <div class="form-group">
             <label>Password</label>

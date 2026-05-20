@@ -1,4 +1,5 @@
 import {Component, inject, signal, OnInit} from '@angular/core';
+import {RouterLink} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {NgxChartsModule, Color, ScaleType} from '@swimlane/ngx-charts';
 import {HttpClient} from '@angular/common/http';
@@ -6,10 +7,12 @@ import {FormsModule} from '@angular/forms';
 import {NgxDropzoneModule} from 'ngx-dropzone';
 import {AuthService} from '../../core/auth/auth.service';
 
+declare let Paddle: any;
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxChartsModule, FormsModule, NgxDropzoneModule],
+  imports: [CommonModule, NgxChartsModule, FormsModule, NgxDropzoneModule, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -171,9 +174,4 @@ export class DashboardComponent implements OnInit {
   private recordAnalytics(provider: string, isFailover: boolean) {
     this.loadAnalytics(); // Refresh
   }
-
-  buyCredits() {
-    alert('Redirecting to Stripe checkout...');
-  }
 }
-

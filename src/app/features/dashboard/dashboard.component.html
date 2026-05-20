@@ -1,12 +1,12 @@
 <div class="dashboard-container">
   <header>
-    <h1>Mission Control</h1>
+    <h1>Smart OCR</h1>
     <div class="header-right">
       <div class="credits-wrapper" style="display: flex; align-items: center; background: rgba(212, 175, 55, 0.1); padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">
         <span style="color: #d4af37; font-weight: bold; margin-right: 0.5rem;">Available Credits:</span>
         <span style="color: white; font-size: 1.1rem; font-weight: 800;">{{ authService.creditsRemaining() }}</span>
       </div>
-      <button class="buy-credits-btn" (click)="buyCredits()">Buy Credits</button>
+      <a routerLink="/billing" class="buy-credits-btn" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Buy Credits</a>
 
       <div class="user-profile">{{ authService.currentUser()?.email || 'Guest' }}</div>
 
